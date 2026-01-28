@@ -1,29 +1,16 @@
 import streamlit as st
-import cv2
 import requests
 import numpy as np
-from pyzbar.pyzbar import decode
 import google.generativeai as genai
 from PIL import Image
 
 # ---------------- CONFIG ----------------
 st.set_page_config(page_title="FoodScan", layout="centered")
 
-#  Replace with st.secrets["GEMINI_API_KEY"] in production
-genai.configure(api_key="AIzaSyDNUi_YOiUFDOUF24HKOTk8qrbbMpCrqts")
+# Gemini API key (set in Render Environment Variables)
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # ---------------- FUNCTIONS ----------------
-
-def scan_barcode(image):
-    """
-    Detect barcode from RGB image
-    """
-    img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    barcodes = decode(img)
-    if not barcodes:
-        return None, None
-    barcode = barcodes[0]
-    return barcode.data.decode("utf-8"), barcode
 
 def get_product_from_api(barcode):
     url = f"https://world.openfoodfacts.net/api/v2/product/{barcode}"
@@ -69,10 +56,10 @@ Give a clear recommendation:
 
 # ---------------- UI ----------------
 
-st.title(" FoodScan – Smart Food Analyzer")
+st.title("🥗 FoodScan – Smart Food Analyzer")
 
 # ---- Health Profile ----
-st.subheader(" Health Profile")
+st.subheader("🧑‍⚕️ Health Profile")
 age = st.number_input("Age", min_value=1, max_value=120, value=24)
 diet = st.selectbox("Diet Type", ["Vegetarian", "Non-Vegetarian"])
 diabetes = st.checkbox("Diabetes")
@@ -89,62 +76,39 @@ user_profile = {
 
 st.divider()
 
-# ---- Scan Mode ----
-scan_mode = st.radio("Choose scan method", [" Upload Image", " Camera Scan"])
+# ---- Barcode Input ----
+st.subheader("📦 Product Barcode")
 
-image = None
+barcode_data = st.text_input(
+    "Enter barcode number (recommended for accuracy)",
+    placeholder="e.g. 8901030695551"
+)
 
-# ---- Upload Image ----
-if scan_mode == " Upload Image":
-    uploaded_file = st.file_uploader(
-        "Upload barcode image",
-        type=["jpg", "png", "jpeg", "webp"]
-    )
+# ---- Optional Image Upload (Preview only) ----
+uploaded_file = st.file_uploader(
+    "Optional: Upload product image (for reference)",
+    type=["jpg", "png", "jpeg", "webp"]
+)
 
-    if uploaded_file:
-        image_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        image = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+if uploaded_file:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-# ---- Camera Scan ----
-elif scan_mode == " Camera Scan":
-    camera_image = st.camera_input("Scan barcode using camera")
+# ---- Process Barcode ----
+if barcode_data:
+    st.success(f"Barcode entered: {barcode_data}")
 
-    if camera_image is not None:
-        pil_image = Image.open(camera_image)
-        image = np.array(pil_image)
+    product = get_product_from_api(barcode_data)
 
-# ---- Process Image ----
-if image is not None:
-    if image.ndim not in [2, 3]:
-        st.error("Invalid image format")
-        st.stop()
+    if product:
+        st.subheader("📄 Product Info")
+        st.write("**Name:**", product["name"])
+        st.write("**Ingredients:**", product["ingredients"])
 
-    st.image(image, caption="Input Image", use_column_width=True)
+        st.subheader("🧠 Health Recommendation")
+        with st.spinner("Analyzing with AI..."):
+            result = health_decision(user_profile, product)
 
-    barcode_data, barcode_obj = scan_barcode(image)
-
-    if barcode_data:
-        st.success(f" Barcode detected: {barcode_data}")
-
-        # draw bounding box
-        x, y, w, h = barcode_obj.rect
-        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        st.image(image, caption="Detected Barcode", use_column_width=True)
-
-        product = get_product_from_api(barcode_data)
-
-        if product:
-            st.subheader(" Product Info")
-            st.write("**Name:**", product["name"])
-            st.write("**Ingredients:**", product["ingredients"])
-
-            st.subheader(" Health Recommendation")
-            with st.spinner("Analyzing with AI..."):
-                result = health_decision(user_profile, product)
-
-            st.info(result)
-        else:
-            st.error(" Product not found in OpenFoodFacts")
+        st.info(result)
     else:
-        st.error(" No barcode detected. Try better lighting or angle.")
+        st.error("❌ Product not found in OpenFoodFacts")
