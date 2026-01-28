@@ -3,12 +3,13 @@ import requests
 import numpy as np
 import google.generativeai as genai
 from PIL import Image
+import os
 
 # ---------------- CONFIG ----------------
 st.set_page_config(page_title="FoodScan", layout="centered")
 
 # Gemini API key (set in Render Environment Variables)
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # ---------------- FUNCTIONS ----------------
 
