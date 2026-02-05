@@ -1,16 +1,30 @@
+%%writefile app.py
 import streamlit as st
+import cv2
 import requests
 import numpy as np
+from pyzbar.pyzbar import decode
 import google.generativeai as genai
 from PIL import Image
 
 # ---------------- CONFIG ----------------
 st.set_page_config(page_title="FoodScan", layout="centered")
 
-# Gemini API key (set in Render Environment Variables)
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+#  Replace with st.secrets["GEMINI_API_KEY"] in production
+genai.configure(api_key="AIzaSyCpbhnz-ar-UnjTqCYacbwl1R8xcr6cWas")
 
 # ---------------- FUNCTIONS ----------------
+
+def scan_barcode(image):
+    """
+    Detect barcode from RGB image
+    """
+    img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    barcodes = decode(img)
+    if not barcodes:
+        return None, None
+    barcode = barcodes[0]
+    return barcode.data.decode("utf-8"), barcode
 
 def get_product_from_api(barcode):
     url = f"https://world.openfoodfacts.net/api/v2/product/{barcode}"
@@ -26,7 +40,7 @@ def get_product_from_api(barcode):
     return {
         "name": product.get("product_name", "Unknown"),
         "nutriments": product.get("nutriments", {}),
-        "ingredients": product.get("ingredients_text", ""),
+        "ingredients": product.get("ingredients_text", "No ingredients present"),
         "labels": product.get("labels", "")
     }
 
@@ -46,9 +60,30 @@ Food nutrition (per 100g):
 - Salt: {product['nutriments'].get('salt_100g', 0)}
 - Saturated Fat: {product['nutriments'].get('saturated-fat_100g', 0)}
 
-Give a clear recommendation:
+Rules:
+0. If ingredients is not present -> Not Recommended
+1. Diabetes AND sugar > 10 → Not Recommended
+2. BP AND salt > 0.6 → Not Recommended
+3. Heart disease AND fat > 5 → Consume with Caution
+4. Age < 5 AND sugar > 8 → Not Recommended
+5. Age 5–12 AND sugar > 8 → Consume with Caution
+6. Age > 60 AND salt > 0.5 → Consume with Caution
+7. Age > 60 AND fat > 6 → Consume with Caution
+8. Else → Recommended
+9. Sugar > 10 AND sugar ≤ 15 → Consume with Caution
+10. Salt > 1.0 → Not Recommended
+11. Salt > 0.6 AND salt ≤ 1.0 → Consume with Caution
+12. Saturated fat > 10 → Not Recommended
+13. Saturated fat > 5 AND fat ≤ 10 → Consume with Caution
+14. Sugar > 10 AND salt > 0.6 → Not Recommended
+15. Sugar > 10 AND fat > 5 → Not Recommended
+16. Age > 60 AND sugar > 8 AND salt > 0.5 → Not Recommended
+17. Age ≤ 12 AND (sugar > 12 OR salt > 0.8) → Not Recommended
+18. Else → Recommended
+
+Give a clear recommendation based on the Rules which is mentioned above and strictly go through and follow the Rules:
 - Recommended / Consume with caution / Not recommended
-- Explain why in simple language.
+- Explain why in simple language with 30 words.
 """
     model = genai.GenerativeModel("gemini-2.5-flash")
     response = model.generate_content(prompt)
@@ -56,10 +91,10 @@ Give a clear recommendation:
 
 # ---------------- UI ----------------
 
-st.title("🥗 FoodScan – Smart Food Analyzer")
+st.title(" FoodScan – Smart Food Analyzer")
 
 # ---- Health Profile ----
-st.subheader("🧑‍⚕️ Health Profile")
+st.subheader(" Health Profile")
 age = st.number_input("Age", min_value=1, max_value=120, value=24)
 diet = st.selectbox("Diet Type", ["Vegetarian", "Non-Vegetarian"])
 diabetes = st.checkbox("Diabetes")
@@ -76,39 +111,62 @@ user_profile = {
 
 st.divider()
 
-# ---- Barcode Input ----
-st.subheader("📦 Product Barcode")
+# ---- Scan Mode ----
+scan_mode = st.radio("Choose scan method", [" Upload Image", " Camera Scan"])
 
-barcode_data = st.text_input(
-    "Enter barcode number (recommended for accuracy)",
-    placeholder="e.g. 8901030695551"
-)
+image = None
 
-# ---- Optional Image Upload (Preview only) ----
-uploaded_file = st.file_uploader(
-    "Optional: Upload product image (for reference)",
-    type=["jpg", "png", "jpeg", "webp"]
-)
+# ---- Upload Image ----
+if scan_mode == " Upload Image":
+    uploaded_file = st.file_uploader(
+        "Upload barcode image",
+        type=["jpg", "png", "jpeg", "webp"]
+    )
 
-if uploaded_file:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    if uploaded_file:
+        image_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+        image = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-# ---- Process Barcode ----
-if barcode_data:
-    st.success(f"Barcode entered: {barcode_data}")
+# ---- Camera Scan ----
+elif scan_mode == " Camera Scan":
+    camera_image = st.camera_input("Scan barcode using camera")
 
-    product = get_product_from_api(barcode_data)
+    if camera_image is not None:
+        pil_image = Image.open(camera_image)
+        image = np.array(pil_image)
 
-    if product:
-        st.subheader("📄 Product Info")
-        st.write("**Name:**", product["name"])
-        st.write("**Ingredients:**", product["ingredients"])
+# ---- Process Image ----
+if image is not None:
+    if image.ndim not in [2, 3]:
+        st.error("Invalid image format")
+        st.stop()
 
-        st.subheader("🧠 Health Recommendation")
-        with st.spinner("Analyzing with AI..."):
-            result = health_decision(user_profile, product)
+    st.image(image, caption="Input Image", use_column_width=False)
 
-        st.info(result)
+    barcode_data, barcode_obj = scan_barcode(image)
+
+    if barcode_data:
+        st.success(f" Barcode detected: {barcode_data}")
+
+        # draw bounding box
+        x, y, w, h = barcode_obj.rect
+        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        st.image(image, caption="Detected Barcode", use_column_width=True)
+
+        product = get_product_from_api(barcode_data)
+
+        if product:
+            st.subheader(" Product Info")
+            st.write("**Name:**", product["name"])
+            st.write("**Ingredients:**", product["ingredients"])
+
+            st.subheader(" Health Recommendation")
+            with st.spinner("Analyzing with AI..."):
+                result = health_decision(user_profile, product)
+
+            st.info(result)
+        else:
+            st.error(" Product not found in OpenFoodFacts")
     else:
-        st.error("❌ Product not found in OpenFoodFacts")
+        st.error(" No barcode detected. Try better lighting or angle.")
