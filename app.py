@@ -11,7 +11,7 @@ from PIL import Image
 st.set_page_config(page_title="FoodScan", layout="centered")
 
 #  Replace with st.secrets["GEMINI_API_KEY"] in production
-genai.configure(api_key="AIzaSyCpbhnz-ar-UnjTqCYacbwl1R8xcr6cWas")
+genai.configure(api_key=st.secrets"GEMINI_API_KEY")
 
 # ---------------- FUNCTIONS ----------------
 
