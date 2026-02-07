@@ -45,10 +45,10 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 
 ## How It Works
 
-1. Start the Application
+1. **Start the Application**
    The user launches the FoodScan application using the Streamlit interface.
 
-2. Enter Health Profile Details
+2. **Enter Health Profile Details**
    The user provides basic health information such as:
 
    - Age
@@ -56,38 +56,38 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
    - Blood pressure condition
    - Heart disease condition
 
-3. Choose Barcode Input Method
+3. **Choose Barcode Input Method**
    The user selects one of the following methods to scan a barcode:
 
    - Image Upload (upload a barcode image)
    - Camera Input (scan barcode using live camera)
 
-4. Capture Barcode Image
+4. **Capture Barcode Image**
   
    - If Image Upload is selected, the uploaded image is processed.
    - If Camera Input is selected, a live image is captured.
 
-5. Barcode Detection
+5. **Barcode Detection**
    The application uses computer vision techniques (OpenCV + Pyzbar) to detect the barcode from the image.
 
-6. Extract Barcode Number
+6. **Extract Barcode Number**
    Once detected, the numeric barcode value is extracted from the image.
 
-7. Fetch Product Details
+7. **Fetch Product Details**
    The extracted barcode number is used to query the OpenFoodFacts API to retrieve:
 
    - Product name
    - Ingredients
    - Nutrition data
 
-8. Fetch Nutritional Values
+8. **Fetch Nutritional Values**
    Key nutritional values per 100g are extracted, such as:
 
    - Sugar
    - Salt
    - Saturated fat
 
-9. Apply Health Rules
+9. **Apply Health Rules**
    The system evaluates the nutritional values against:
 
    - User health conditions
@@ -95,13 +95,13 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
    - WHO dietary guidelines
      using a strict, priority-based rule engine.
 
-10. Generate Health Recommendation
+10. **Generate Health Recommendation**
     Based on the first matching rule:
 
     - Recommended
     - Consume with Caution
     - Not Recommended
-      AI (Groq LLM) is used only to format a clear, controlled explanation.
+      AI (Gemini LLM) is used only to format a clear, controlled explanation.
 
 11. Display Recommendation to User
     The final decision and primary health reason are displayed clearly on the UI.
