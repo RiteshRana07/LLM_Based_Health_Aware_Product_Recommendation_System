@@ -23,3 +23,17 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 - Clear decision output with primary health reason
 
 - Lightweight, single-file Streamlit application
+
+
+## Tech Stack
+
+|Component          |Technology|
+|-------------------|----------|
+|Frontend UI	      |Streamlit|
+|Backend Logic	    |Python|
+|Barcode Detection	|OpenCV, Pyzbar|
+|Image Processing	  |Pillow, NumPy|
+|Food Data API	    |OpenFoodFacts|
+|AI Model	          |Groq (LLaMA 3.1)|
+|Rule Engine	      |WHO + Medical Logic|
+|Deployment Ready	  |Streamlit Cloud / Local|
