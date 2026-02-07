@@ -14,11 +14,11 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 
 - Health rules aligned with WHO dietary guidelines
 
-- AI-assisted decision explanation using Groq LLM
+- AI-assisted decision explanation using Gemini LLM
 
-- Deterministic, rule-based logic (no hallucinations)
+- Deterministic, rule-based logic
 
-- Age-aware recommendations (children & elderly)
+- Age-aware recommendations
 
 - Clear decision output with primary health reason
 
