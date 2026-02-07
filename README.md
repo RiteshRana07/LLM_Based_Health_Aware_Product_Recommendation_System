@@ -113,3 +113,13 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 `cd your-project`<br>
 `pip install -r requirements.txt`
 
+## Run the Project
+
+**Step 1: Configure Gemini API Key**  
+`export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"`
+
+**Step 2: Start the Application**  
+`streamlit run app.py`
+
+**Step 3: Access the Application**  
+`http://localhost:8501`
