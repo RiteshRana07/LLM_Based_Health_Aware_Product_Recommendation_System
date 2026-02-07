@@ -123,3 +123,10 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 
 **Step 3: Access the Application**  
 `http://localhost:8501`
+
+## Feature Enhancements
+
+- Traffic-light nutrition indicators (Green / Yellow / Red) for quick understanding
+- Allergen detection and warnings
+- Multi-language support for global accessibility
+- Smart alerts for unhealthy frequent consumption
