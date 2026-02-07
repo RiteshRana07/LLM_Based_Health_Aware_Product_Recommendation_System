@@ -83,11 +83,12 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 9. **Fetch Nutritional Values**  
    Key nutritional values per 100g are extracted, such as:
     
-    - Sugar
-    - Salt
-    - Saturated fat
+   - User health conditions
+   - Age-based constraints
+   - WHO dietary guidelines
+     using a strict, priority-based rule engine.
 
-11. **Apply Health Rules**  
+10. **Apply Health Rules**  
    The system evaluates the nutritional values against:
 
    - User health conditions
