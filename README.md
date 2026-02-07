@@ -4,6 +4,8 @@ FoodScan is an AI-powered food scanning application that combines real-time barc
 
 It bridges computer vision, nutrition databases, rule-based medical logic, and LLM-assisted recommendations to deliver accurate food health assessments.
 
+![System Workflow](images/Workflow.png)
+
 ## Features
 
 - Barcode scanning via image upload or live camera
