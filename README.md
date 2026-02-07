@@ -45,7 +45,7 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 
 ## How It Works
 
-1. **Start the Application**
+1. **Start the Application**  
    The user launches the FoodScan application using the Streamlit interface.
 
 3. **Enter Health Profile Details**
