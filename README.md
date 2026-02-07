@@ -1,4 +1,4 @@
-FoodScan – Intelligent Food Health Analyzer
+# FoodScan – Intelligent Food Health Analyzer
 
 FoodScan is an AI-powered food scanning application that combines real-time barcode detection, nutritional lookup, and a strict health recommendation engine based on user health profile and WHO dietary guidelines.
 
