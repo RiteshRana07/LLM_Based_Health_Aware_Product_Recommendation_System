@@ -18,15 +18,16 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 
 - Health rules aligned with WHO dietary guidelines
 
-- AI-assisted decision explanation using Gemini LLM
+- AI-assisted decision explanation using Groq LLaMA model
 
-- Deterministic, rule-based logic
-
+- Deterministic, rule-based logic with strict ingredient validation (missing ingredients → Not Recommended)
 - Age-aware recommendations
 
 - Clear decision output with primary health reason
 
 - Lightweight, single-file Streamlit application
+  
+- Strict safety rule: If ingredients are missing, the product is automatically marked as Not Recommended
 
 
 ## Tech Stack
@@ -35,10 +36,10 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 |-------------------|----------|
 |Frontend UI	      |Streamlit|
 |Backend Logic	    |Python|
-|Barcode Detection	|OpenCV, Pyzbar|
+|Barcode Detection	|OpenCV|
 |Image Processing	  |Pillow, NumPy|
 |Food Data API	    |OpenFoodFacts|
-|AI Model	          |Groq (LLaMA 3.1)|
+|AI Model	          |Groq (LLaMA 3.3 via Groq API)|
 |Rule Engine	      |WHO + Medical Logic|
 |Deployment Ready	  |Streamlit Cloud / Local|
 
@@ -68,7 +69,7 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
    - If Camera Input is selected, a live image is captured.
 
 5. **Barcode Detection**  
-   The application uses computer vision techniques (OpenCV + Pyzbar) to detect the barcode from the image.
+   The application uses computer vision techniques OpenCV to detect the barcode from the image.
 
 6. **Extract Barcode Number**  
    Once detected, the numeric barcode value is extracted from the image.
@@ -102,7 +103,7 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
     - Recommended
     - Consume with Caution
     - Not Recommended  
-      AI (Gemini LLM) is used only to format a clear, controlled explanation.
+      AI (Groq LLaMA model) is used only to format a clear, controlled explanation, while the final decision is governed by the deterministic rule engine.
 
 11. **Display Recommendation to User**  
     The final decision and primary health reason are displayed clearly on the UI.
@@ -110,14 +111,14 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 
 ## Installation
 
-`git clone <your-repo-url>`<br>
+`git clone https://github.com/RiteshRana07/LLM_Based_Health_Aware_Product_Recommendation_System.git`<br>
 `cd your-project`<br>
 `pip install -r requirements.txt`
 
 ## Run the Project
 
 **Step 1: Configure Gemini API Key**  
-`export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"`
+`export GROQ_API_KEY="YOUR_GROQ_API_KEY"`
 
 **Step 2: Start the Application**  
 `streamlit run app.py`
