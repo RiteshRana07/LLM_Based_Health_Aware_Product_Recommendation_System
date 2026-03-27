@@ -8,7 +8,7 @@ It bridges computer vision, nutrition databases, rule-based medical logic, and L
 
 ![System Workflow](images/Workflow.png)
 
-## Features
+## Features  
 
 - Barcode scanning via image upload or live camera
 
